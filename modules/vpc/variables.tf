@@ -11,6 +11,8 @@ variable "public_subnet_cidr_blocks" {
 
 variable "private_subnet_cidr_blocks" {
   description = "The list of CIDR blocks to use in building the private subnets. List size needs to match availability zone count"
+  /*Define the variable type*/
+  type        = list
 }
 
 variable "availability_zones" {

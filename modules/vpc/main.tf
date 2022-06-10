@@ -2,7 +2,7 @@
 
 # Internet VPC
 resource "aws_vpc" "application_vpc" {
-  cidr_block           = [var.vpc_cidr_block]
+  cidr_block           = var.vpc_cidr_block
   instance_tenancy     = "default"
   enable_dns_support   = "true"
   enable_dns_hostnames = "true"
@@ -56,7 +56,7 @@ resource "aws_route_table" "public_rt" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = 
+    gateway_id = aws_internet_gateway.internet_gw.id
   }
 
   tags = {
@@ -81,7 +81,8 @@ resource "aws_nat_gateway" "nat_gw" {
   count         = length(aws_subnet.public_subnets)
 
   tags = {
-    Name = "${var.environment}_nat_gw"
+    /*changing name as per standards*/
+    Name = "${var.environment}_nat_gw_${substr(element(var.availability_zones, count.index), -1, 1)}"
   }
 }
 
@@ -102,7 +103,8 @@ resource "aws_route_table" "lambda_function_rt" {
 # private subnet route table associations
 resource "aws_route_table_association" "private_rta" {
   subnet_id      = element(aws_subnet.private_subnets.*.id, count.index)
-  route_table_id = aws_route_table.lambda_function_rt[].id
+  /*fix route tables*/
+  route_table_id = element(aws_route_table.lambda_function_rt.*.id, count.index)
   count          = length(aws_subnet.private_subnets)
 }
 
